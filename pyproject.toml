@@ -1,0 +1,28 @@
+[project]
+name = "ceia-visionporcomputadoraii"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "ipykernel>=6.29.5,<7.0.0",
+    "jupyter>=1.1.1",
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.4",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.7.2",
+    "seaborn>=0.13.2",
+    "torch>=2.8.0",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "torch>=2.8.0,<3.0.0",
+    "torchvision>=0.23.0,<0.24.0"
+]
+
+[[tool.uv.index]]
+name = "pytorch-cuda126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
