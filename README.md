@@ -135,7 +135,7 @@ jupyter lab 1_EDA.ipynb
    - Eliminar duplicados exactos
    - Reorganizar splits para eliminar fugas de datos
    - Convertir a grayscale (1 canal)
-   - Resize uniforme con letterboxing
+   - Resize uniforme
    - Normalización consistente usando estadísticas del train
 
 2. **Estrategia de modelado**:
