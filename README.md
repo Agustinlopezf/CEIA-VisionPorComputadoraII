@@ -6,7 +6,7 @@ Repositorio del Trabajo Final de la materia **Visión por Computadora II** de la
 
 Este proyecto se enfoca en el desarrollo de un modelo de clasificación de imágenes médicas para la detección y clasificación de nódulos pulmonares en tomografías computadas (CT) de tórax. El objetivo es clasificar las imágenes en diferentes tipos de carcinoma pulmonar y casos normales.
 
-**Dataset**: [Chest CT-Scan images Dataset](https://www.kaggle.com/datasets) (Kaggle)
+**Dataset**: [Chest CT-Scan images Dataset](https://www.kaggle.com/datasets/mohamedhanyyy/chest-ctscan-images) (Kaggle)
 
 ## Objetivos
 
