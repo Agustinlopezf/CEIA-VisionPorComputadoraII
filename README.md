@@ -88,39 +88,61 @@ Este dataset limpio (`Data_Clean`) se utiliza para todos los entrenamientos post
 
 Se implementaron modelos baseline utilizando VGG16 preentrenada en ImageNet con transfer learning. Se entrenaron dos versiones: una con el dataset original (`Data`) y otra con el dataset limpio sin duplicados (`Data_Clean`).
 
-### Resultados F1-Score por Clase
+### Resultados Completos del Modelo Baseline
 
-#### Dataset Original (`Data`)
+#### Dataset Limpio (`Data_Clean`) - Modelo Final
 
-| Clase | F1-Score |
-|-------|----------|
-| Adenocarcinoma | 0.35 |
-| Large Cell Carcinoma | 0.26 |
-| Normal | 0.97 |
-| Squamous Cell Carcinoma | 0.58 |
-| **Macro Average** | **0.54** |
+**Métricas Globales:**
+- **Accuracy**: 0.65
+- **F1-Score Macro**: 0.70
+- **Recall Macro**: 0.70
 
-#### Dataset Limpio (`Data_Clean`)
+**Métricas por Clase:**
 
-| Clase | F1-Score |
-|-------|----------|
-| Adenocarcinoma | 0.64 |
-| Large Cell Carcinoma | 0.35 |
-| Normal | 0.90 |
-| Squamous Cell Carcinoma | 0.56 |
-| **Macro Average** | **0.61** |
+| Clase | Precision | Recall | F1-Score | Support |
+|-------|-----------|--------|----------|---------|
+| Adenocarcinoma | 0.66 | 0.69 | 0.67 | 51 |
+| Large Cell Carcinoma | 0.70 | 0.50 | 0.58 | 28 |
+| Normal | 0.91 | 1.00 | 0.95 | 10 |
+| Squamous Cell Carcinoma | 0.55 | 0.62 | 0.58 | 39 |
+
+#### Comparación con Dataset Original (`Data`)
+
+| Métrica | Dataset Original | Dataset Limpio | Mejora |
+|---------|------------------|-----------------|--------|
+| Accuracy | 0.55 | **0.65** | +18% |
+| F1-Score Macro | 0.54 | **0.70** | +30% |
+| Recall Macro | 0.58 | **0.70** | +21% |
 
 ### Análisis de Resultados
 
-Los resultados muestran una **mejora significativa** al utilizar el dataset limpio (`Data_Clean`) en comparación con el dataset original:
+Se observa que los resultados con el dataset original fueron peores que usando el dataset limpio de duplicados, por lo que se avanzará con este último.
 
-- **Macro F1-Score**: Aumentó de **0.54** a **0.61** (+13% de mejora relativa)
-- **Adenocarcinoma**: Mejoró de 0.35 a **0.64** (+83% de mejora relativa)
-- **Large Cell Carcinoma**: Mejoró de 0.26 a **0.35** (+35% de mejora relativa)
-- **Normal**: Se mantuvo alto en ambos casos (0.97 vs 0.90)
-- **Squamous Cell Carcinoma**: Se mantuvo similar (0.58 vs 0.56)
+**Hallazgos principales:**
 
-Estos resultados confirman la importancia de la limpieza de datos: **eliminar duplicados mejora significativamente el rendimiento del modelo**, especialmente en las clases de carcinoma que son más difíciles de clasificar. El dataset limpio permite al modelo generalizar mejor y evitar el sobreajuste causado por imágenes duplicadas.
+1. **Mejora significativa con dataset limpio**: El modelo con `Data_Clean` supera consistentemente al modelo entrenado con el dataset original en todas las métricas principales.
+
+2. **Clase Normal**: Presenta excelente desempeño (recall = 1.00, F1 = 0.95), lo cual es clínicamente relevante ya que minimiza los falsos negativos en casos normales.
+
+3. **Clases problemáticas identificadas**:
+   - **Large Cell Carcinoma**: Presenta un recall bajo (0.50), indicando que el modelo tiene dificultades para detectar correctamente esta clase.
+   - **Confusión entre Adenocarcinoma y Squamous Cell Carcinoma**: La matriz de confusión muestra confusiones entre estas dos clases tumorales, lo que podría indicar similitudes visuales entre ellas.
+
+4. **Balanceo de clases**: A pesar del desbalance en el dataset, el modelo logra un buen desempeño general, sugiriendo que las técnicas de data augmentation aplicadas están mitigando adecuadamente este efecto.
+
+### Estrategias Futuras
+
+Tras identificar que **Large Cell Carcinoma** presenta un recall bajo (0.50) y que existe confusión entre **Adenocarcinoma** y **Squamous Cell Carcinoma**, se evaluarán las siguientes estrategias:
+
+1. **Data augmentation específico por clase**: Aplicar técnicas de aumento dirigidas a las clases problemáticas, como:
+   - Sobremuestreo (oversampling) de Large Cell Carcinoma
+   - Transformaciones que preserven características distintivas entre Adenocarcinoma y Squamous Cell Carcinoma
+
+2. **Pérdidas focalizadas**: Implementar funciones de pérdida que penalicen más los errores en clases con bajo desempeño (p. ej., Focal Loss) o ajustar pesos de clase en la función de pérdida.
+
+3. **Arquitecturas más profundas**: Probar modelos como DenseNet121 o ResNet que puedan capturar características más complejas y mejorar la discriminación entre clases similares.
+
+4. **Fine-tuning de capas adicionales**: En lugar de entrenar solo la última capa, descongelar progresivamente capas más profundas del modelo preentrenado para permitir un ajuste más específico a las características del dominio médico.
 
 ### Notebooks de Baseline
 
