@@ -209,6 +209,7 @@ La implementación detallada se encuentra en la notebook:
 | ResNet50      | Clasificador + bloque final | ≈ 0.97  | Mejor desempeño global; modelo seleccionado como final.   |
 
 Estos resultados muestran cómo, partiendo de un baseline razonable con VGG16, la combinación de **dataset limpio**, **data augmentation específico para imágenes médicas** y **fine-tuning parcial de arquitecturas modernas (DenseNet121 y ResNet50)** permite alcanzar desempeños cercanos al uso clínico, manteniendo un buen equilibrio entre sensibilidad y precisión.
+También se muestra como aplicando Transfer Learning, realizando un fine-tuning de solamente las últimas capas convolucionales, logramos que la red entrenada originalmente en Image Net logre buenos resultados en un dataset diferencia como lo es el de imágenes médicas.
 
 ## Trabajo a Futuro
 
