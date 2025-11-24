@@ -134,20 +134,114 @@ Se observa que los resultados con el dataset original fueron peores que usando e
 
 Tras identificar que **Large Cell Carcinoma** presenta un recall bajo (0.50) y que existe confusión entre **Adenocarcinoma** y **Squamous Cell Carcinoma**, se evaluarán las siguientes estrategias:
 
-1. **Data augmentation específico por clase**: Aplicar técnicas de aumento dirigidas a las clases problemáticas, como:
-   - Sobremuestreo (oversampling) de Large Cell Carcinoma
-   - Transformaciones que preserven características distintivas entre Adenocarcinoma y Squamous Cell Carcinoma
+1. **Arquitecturas más profundas**: Probar modelos como **DenseNet121** o **ResNet50** que puedan capturar características más complejas y mejorar la discriminación entre clases similares.
 
-2. **Pérdidas focalizadas**: Implementar funciones de pérdida que penalicen más los errores en clases con bajo desempeño (p. ej., Focal Loss) o ajustar pesos de clase en la función de pérdida.
-
-3. **Arquitecturas más profundas**: Probar modelos como DenseNet121 o ResNet que puedan capturar características más complejas y mejorar la discriminación entre clases similares.
-
-4. **Fine-tuning de capas adicionales**: En lugar de entrenar solo la última capa, descongelar progresivamente capas más profundas del modelo preentrenado para permitir un ajuste más específico a las características del dominio médico.
+2. **Fine-tuning de capas adicionales**: En lugar de entrenar solo la última capa, descongelar progresivamente capas más profundas del modelo preentrenado para permitir un ajuste más específico a las características del dominio médico.
 
 ### Notebooks de Baseline
 
 - **[`3_Baseline_VGG16_data_original.ipynb`](3_Baseline_VGG16_data_original.ipynb)**: Entrenamiento con dataset original
 - **[`3_Baseline_VGG16.ipynb`](3_Baseline_VGG16.ipynb)**: Entrenamiento con dataset limpio (`Data_Clean`)
+
+## Modelos Complejos: DenseNet121 y ResNet50
+
+Se implementaron dos modelos más modernos y con arquitecturas más profundas, ambos preentrenados en ImageNet y ajustados mediante *transfer learning* sobre el dataset limpio (`Data_Clean`):
+
+- **DenseNet121**
+- **ResNet50**
+
+En ambos casos se reutilizó el mismo esquema de preprocesamiento y *data augmentation* definido para el baseline con VGG16 (conversiones a escala de grises, *resize*, rotaciones leves, *flip* horizontal, variaciones de brillo/contraste y normalización tipo ImageNet).
+
+### DenseNet121 – Modelo intermedio
+
+DenseNet121 se seleccionó por su uso extendido en imágenes médicas y por su arquitectura con **conexiones densas** entre capas, que favorecen la reutilización de características y la captura de detalles finos.
+
+1. **Primer experimento (solo clasificador)**  
+   Inicialmente se entrenó únicamente la capa de clasificación final, manteniendo congelado el extractor de características.  
+   En este escenario, el desempeño fue comparable pero **no superior** al modelo baseline con VGG16.
+
+2. **Fine-tuning parcial de capas profundas**  
+   A partir de la revisión bibliográfica y de los resultados obtenidos, se observó que DenseNet121 tiende a generar representaciones muy ricas pero también más especializadas en el dominio de ImageNet.  
+   Por este motivo, se realizó un **fine-tuning parcial**, descongelando el último bloque convolucional (**`denseblock4` y `norm5`**) además del clasificador final.  
+   Con un *learning rate* bajo (`lr = 5e-5`) y *early stopping* se obtuvo un **salto significativo en performance**, alcanzando aproximadamente:
+
+   - **Accuracy (test)** ≈ 0.92  
+   - **F1-Score Macro** ≈ 0.93  
+   - **Recall Macro** ≈ 0.94  
+
+   Esto demuestra que, en este dataset, un ajuste fino de las capas profundas de DenseNet121 permite “desaprender” parte de lo específico de ImageNet y especializarse en patrones propios de las CT de tórax.
+
+La implementación detallada se encuentra en la notebook:
+
+- **[`4_Modelo_DenseNet121.ipynb`](4_Modelo_DenseNet121.ipynb)**
+
+---
+
+### ResNet50 – Modelo final
+
+Como segundo modelo complejo se utilizó **ResNet50**, una arquitectura basada en **bloques residuales** con *skip connections* que facilitan el entrenamiento de redes profundas al mejorar el flujo de gradientes.
+
+Sobre este modelo se aplicó también *transfer learning* con:
+
+- Congelación inicial del extractor de características.
+- Reemplazo de la capa de clasificación final para 4 clases.
+- Fine-tuning parcial de las capas profundas (bloque `layer4`) junto con el clasificador.
+- Mismo esquema de *data augmentation* y *early stopping* que en DenseNet121.
+
+Con esta configuración, **ResNet50** obtuvo el **mejor desempeño global** del trabajo, alcanzando en el conjunto de test:
+
+- **Accuracy (test)** ≈ 0.97  
+- **F1-Score Macro** ≈ 0.97  
+- **Recall Macro** ≈ 0.98
+
+La implementación detallada se encuentra en la notebook:
+
+- **[`5_Modelo_ResNet50.ipynb`](5_Modelo_ResNet50.ipynb)**
+
+---
+
+### Comparación de Modelos
+
+| Modelo        | Fine-tuning          | Accuracy (test) | Comentarios principales                                   |
+|---------------|----------------------|-----------------|-----------------------------------------------------------|
+| VGG16         | Solo clasificador    | ≈ 0.65          | Baseline, mejora con dataset limpio respecto al dataset original, y permitió evaluación de transformaciones aplicadas. |
+| DenseNet121   | Clasificador + bloque final | ≈ 0.92  | Gran salto en F1-macro y recall con FT parcial.           |
+| ResNet50      | Clasificador + bloque final | ≈ 0.97  | Mejor desempeño global; modelo seleccionado como final.   |
+
+Estos resultados muestran cómo, partiendo de un baseline razonable con VGG16, la combinación de **dataset limpio**, **data augmentation específico para imágenes médicas** y **fine-tuning parcial de arquitecturas modernas (DenseNet121 y ResNet50)** permite alcanzar desempeños cercanos al uso clínico, manteniendo un buen equilibrio entre sensibilidad y precisión.
+
+## Trabajo a Futuro
+
+A pesar de los buenos resultados obtenidos con DenseNet121 y ResNet50, existen algunas líneas de mejora que podrían aumentar la robustez, interpretabilidad y aplicabilidad clínica del modelo.
+
+### **1. Refinamiento adicional del dataset (`Data_Clean`)**
+Si bien se eliminaron duplicados exactos mediante hash MD5, el análisis mostró que aún existen **imágenes "casi duplicadas"**. Según lo observado en el EDA, en algunos casos corresponden a una misma imagen con variaciones mínimas como presencia de marcas o artefactos, o imágenes de cortes consecutivos de un mismo paciente. 
+
+Como trabajo a futuro se propone:
+
+- Aplicar umbrales más estrictos de similitud utilizando el **hash perceptual**.
+- Separar explícitamente las imágenes por **paciente**, para evitar posibles fugas de información entre splits.
+
+Esto permitiría construir un dataset más independiente, balanceado y representativo.
+
+### **2. Interpretabilidad mediante Grad-CAM**
+Para modelos aplicados a imágenes médicas es fundamental comprender **qué regiones de la imagen utiliza el modelo** para tomar decisiones.
+
+Se propone incorporar:
+
+- **Grad-CAM** y **Grad-CAM++**
+- Superposición de mapas de calor sobre la imagen original
+- Análisis de activaciones por clase
+- Evaluación de predicciones erróneas para detectar patrones espurios
+
+El uso de Grad-CAM permitirá:
+
+- Verificar si el modelo se enfoca en regiones anatómicamente relevantes
+- Aumentar la confiabilidad clínica del sistema
+- Identificar posibles problemas de sobreajuste
+- Guiar futuras mejoras en preprocesamiento o arquitectura
+
+Estas líneas de trabajo fortalecerán la calidad del dataset y la interpretabilidad del modelo, dos aspectos esenciales para aplicaciones en el ámbito médico.
 
 ## Integrantes
 
@@ -163,6 +257,8 @@ CEIA-VisionPorComputadoraII/
 ├── 2_Eliminar_duplicados.ipynb         # Eliminación de imágenes duplicadas
 ├── 3_Baseline_VGG16_data_original.ipynb # Baseline VGG16 con dataset original
 ├── 3_Baseline_VGG16.ipynb               # Baseline VGG16 con dataset limpio
+├── 4_Modelo_DenseNet121.ipynb           # Modelo DenseNet121 con dataset limpio
+├── 5_Modelo_ResNet50.ipynb              # Modelo ResNet50 con dataset limpio
 ├── Data/                                # Dataset de imágenes CT original
 │   ├── train/                           # Conjunto de entrenamiento
 │   ├── valid/                           # Conjunto de validación
