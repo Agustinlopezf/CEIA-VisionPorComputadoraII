@@ -220,7 +220,7 @@ Basándose en esta observación, se realizó una **optimización dirigida** del 
 
 **Resultados del modelo optimizado:**
 
-- **Accuracy (test)**: 0.9766 (97.66%) ⬆️ **+0.78%**
+- **Accuracy (test)**: 0.9766 (97.66%)
 - **F1-Score Macro**: 0.97
 - **Recall Macro**: 0.98
 
@@ -273,9 +273,8 @@ El análisis Grad-CAM reveló información clave:
 
 Basándose en los hallazgos de Grad-CAM, se optimizó el modelo aumentando el parámetro `brightness` en `ColorJitter` de 0.1 a 0.2, lo que resultó en:
 
-- ✅ Corrección del caso problemático identificado
-- ✅ Mejora del accuracy de 96.88% a 97.66%
-- ✅ Mejor balance entre todas las clases
+- Corrección del caso problemático identificado
+- Mejora del accuracy de 96.88% a 97.66%
 
 Este resultado demuestra el valor de la interpretabilidad no solo para validar el modelo, sino también para guiar mejoras específicas y efectivas.
 
@@ -314,7 +313,7 @@ Como trabajo a futuro se propone:
 
 Esto permitiría construir un dataset más independiente, balanceado y representativo.
 
-### **2. Interpretabilidad mediante Grad-CAM** ✅ **IMPLEMENTADO**
+### **2. Interpretabilidad mediante Grad-CAM**
 
 Para modelos aplicados a imágenes médicas es fundamental comprender **qué regiones de la imagen utiliza el modelo** para tomar decisiones. Esta funcionalidad ha sido **implementada y aplicada exitosamente**.
 
@@ -341,10 +340,10 @@ La implementación completa se encuentra en:
 
 **Beneficios obtenidos:**
 
-- ✅ Verificación de que el modelo se enfoca en regiones relevantes
-- ✅ Identificación de características problemáticas (brillo, contraste)
-- ✅ Guía para mejoras específicas y dirigidas del modelo
-- ✅ Aumento de la confiabilidad clínica mediante interpretabilidad
+- Verificación de que el modelo se enfoca en regiones relevantes
+- Identificación de características problemáticas (brillo, contraste)
+- Guía para mejoras específicas y dirigidas del modelo
+- Aumento de la confiabilidad clínica mediante interpretabilidad
 
 ## Integrantes
 
@@ -424,7 +423,7 @@ O con JupyterLab:
 jupyter lab 1_EDA.ipynb
 ```
 
-## 🔍 Hallazgos Principales del EDA
+## Hallazgos Principales del EDA
 
 ### Problemas Críticos Identificados
 
